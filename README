@@ -1,37 +1,35 @@
-World of Tanks Dossier Cache to JSON v8.4 / wotdc2j.py
+                                           _
+                   ___ ___ ___ ___ ___ ___|_|___
+                  | . |   | -_| . | . |_ -| |_ -|
+                  |_  |_|_|___|  _|___|___|_|___|
+                  |___|       |_|           wotdc
 
-Author: Marius Czyz aka Phalynx
-Contact: marius.czyz@gmail.com
+                         By Adam Szieberth
 
-== Demo Systems:
-- WoT Performance Analyzer Charts (Online) http://www.vbaddict.net/wot
-- WOT Statistics (Offline) http://www.saais.co.za/
+===================================================================
 
-== More information regarding the file structure on the WoT Developer Wiki :
-- http://www.vbaddict.net/content.php?10-WoT-Developer-Wiki
+wotdc.py     Converts World of Tanks dossier-cache to plain text
+             data.
 
+             Output format:
+             ------------------------------------------------------
+             First line: dossier_cache version.
+             Second line: user info if able to fetch it from
+             dossier_cache filename, else "?;?".
+             Then one line per tank in the following format:
+             unknown_id;nation_id;tank_id;timestamp;raw_data.
+             Here raw_data is a representation of hexadecimal
+             values formatted to take two characters of space e.g.
+             0 -> 00, 255 -> FF.
 
-== Supported Versions
-- WoT 0.6.x, 0.7.1.x, 0.7.2.x, 0.7.3.x (dossier version 18)
-- Wot 0.7.4.x, 0.7.5.x (dossier version 20)
-- WoT 0.8.0.x, 0.8.1.x (dossier version 22)
-- WoT 0.8.2.x (dossier version 24)
-- WoT 0.8.3.x (dossier version 26)
-- WoT 0.8.4.x (dossier version 27)
+             Written in Python 2.7.
+             Derived from Marius Czyz's World of Tanks Dossier
+             Cache to JSON program:
+             http://github.com/Phalynx/WoT-Dossier-Cache-to-JSON
 
-== Contributors WoTDC2J.py
-- Phalynx
-- Gottzilla
-- NJSaaiman
+===================================================================
 
+               This FREE program is licensed under:
 
-== Usage
-wotdc2j.py <dossier.dat> [rfks]
-
--f - By setting f the JSON will be formatted for better human readability
--r - By setting r the JSON will contain all fields with their values and recognized names
--k - By setting k the JSON will not contain Kills/Frags
--s - By setting s the JSON will not include unix timestamp of creation as it is useless for calculation of checksum
-
-Example:
-python.exe wotdc2j.py dossier.dat -f -r
+           Do What The Fuck You Want To Public License
+                 http://sam.zoy.org/wtfpl/COPYING
