@@ -1,6 +1,7 @@
-# gneposis-wotdc 1.0 by Adam Szieberth (2013)
+# gneposis-wotdcdep 1.0 by Adam Szieberth (2013)
 
-# Converts World of Tanks dossier-cache to plain text data.
+# World of Tanks dossier-cache depickler. Converts dossier-cache
+# file to a more portable data file.
 # Written in Python 2.7. Well, yes I do programming in hungarian.
 
 # Output format:
@@ -8,10 +9,14 @@
 # First line: dossier_cache version.
 # Second line: user info if able to fetch it from dossier_cache filename, else
 # "?;?".
-# Then one line per tank in the following format:
-# unknown_id;nation_id;tank_id;timestamp;raw_data.
-# Here raw_data is a representation of hexadecimal values formatted to take
-# two characters of space e.g. 0 -> 00, 255 -> FF.
+# Then each tank in the following format (\n stands for newline):
+# 1. (key_1, key_2)\n
+# 2. timestamp value\n
+# 3. raw data of tank until \n(key_1, key_2) of next tank:
+#    here each byte represents a value of 0..255.
+
+# If imported, the WoTDossierCache class provides some extra functions for
+# making some data more useable. Use help(WoTDossierCache) for more info.
 
 # Derived from Marius Czyz's World of Tanks Dossier Cache to JSON program
 # http://github.com/Phalynx/WoT-Dossier-Cache-to-JSON
@@ -42,6 +47,8 @@ import sys
 JELENTES_KIT = ".data"
 
 class WoTDossierCache(list):
+    """Reads a World of Tanks dossier-cache file and provides a list of the
+       data."""
     def __init__(self, cache_fajl):
 
         self.path, fajl = os.path.split(os.path.abspath(cache_fajl))
@@ -56,48 +63,56 @@ class WoTDossierCache(list):
         self.verzio = cache[0]
 
         for tank in cache[1].items():
-            tank_struct = str(len(tank[1][1]))+"B"
-            tank_adat   = struct.unpack(tank_struct, tank[1][1])
             self.append({
-                "ismeretlen_id" : tank[0][0],
-                "nemzet_id"     : tank[0][1] >> 4 & 15,
-                "tank_id"       : tank[0][1] >> 8 & 65535,
+                "key_1"         : tank[0][0],
+                "key_2"         : tank[0][1],
                 "tank_timestamp": tank[1][0],
-                "tank_adat"     : tank_adat,
+                "tank_adat"     : tank[1][1],
                 })
 
-    def jelentes(self, output_fajl):
+    def nemzet_id(self, sor):
+        """Returns the nation ID for a tank of given index."""
+        return self[sor]["key_2"] >> 4 & 15
+
+    def tank_id(self, sor):
+        """Returns the tank ID for a tank of given index."""
+        return self[sor]["key_2"] >> 8 & 65535
+
+    def tank_adat(self, sor):
+        """Returns tank data of tank of given index."""
+        tank_struct = str(len(self[sor]["tank_adat"]))+"B"
+        return struct.unpack(tank_struct, self[sor]["tank_adat"])
+
+    def uj_adat(self, ki_fajl):
+        """Generates a more portable data of the dossier-cache and writes it
+           to file ki_fajl."""
         tartalom = "{}\n{}\n".format(self.verzio, self.base32nev)
 
         for tank in self:
-            tartalom += "{};{};{};{};".format(
-                    str(tank["ismeretlen_id"]),
-                    str(tank["nemzet_id"]),
-                    str(tank["tank_id"]),
-                    tank["tank_timestamp"]
+            tartalom += "({};{})\n{}\n{}\n".format(
+                    str(tank["key_1"]),
+                    str(tank["key_2"]),
+                    tank["tank_timestamp"],
+                    tank["tank_adat"]
                 )
 
-            for elem in tank["tank_adat"]:
-                tartalom += "%0.2X" % elem
-            tartalom += "\n"
-
-        with open(output_fajl, "w") as out_file:
+        with open(ki_fajl, "wb") as out_file:
             out_file.write(tartalom)
 
 if __name__ == '__main__':
     if len(sys.argv) == 1:
-        print "gneposis-wotdc 1.0 by Adam Szieberth (2013)"
-        print "usage: wotdc dossier_cache_file <output_file>"
+        print "gneposis-wotdcdep 1.0 by Adam Szieberth (2013)"
+        print "usage: wotdcdep dossier_cache_file <output_file>"
         print "The output_file gets {} extension by default.".format(
                 JELENTES_KIT)
     else:
         dossier_cache = WoTDossierCache(sys.argv[1])
 
-        try:    output_fajl = sys.argv[2]
-        except: output_fajl = "{}/{}{}".format(
+        try:    ki_fajl = sys.argv[2]
+        except: ki_fajl = "{}/{}{}".format(
                         dossier_cache.path,
                         dossier_cache.fajl_nev,
                         JELENTES_KIT
                     )
 
-        dossier_cache.jelentes(output_fajl)
+        dossier_cache.uj_adat(ki_fajl)
