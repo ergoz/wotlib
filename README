@@ -1,33 +1,15 @@
-                                           _
-                   ___ ___ ___ ___ ___ ___|_|___
-                  | . |   | -_| . | . |_ -| |_ -|
-                  |_  |_|_|___|  _|___|___|_|___|
-                  |___|       |_|        wotdcdep
+
+               World of Tanks Library for Python 3.x
 
                          By Adam Szieberth
 
 ===================================================================
 
-wotdcdep.py  World of Tanks dossier-cache depickler. Converts
-             dossier-cache file to a more portable data file.
+depickler.py Module for depickling World of Tanks dossier_cache
+             files.
 
-             Output format:
-             ------------------------------------------------------
-             First line: dossier_cache version.
-             Second line: user info if able to fetch it from
-             dossier_cache filename, else "?;?".
-             Then each tank in the following format (\n stands for
-             newline):
-             1. (key_1, key_2)\n
-             2. timestamp value\n
-             3. raw data of tank until \n(key_1, key_2) of next
-                tank:
-                here each byte represents a value of 0..255.
-
-             Written in Python 2.7.
-             Derived from Marius Czyz's World of Tanks Dossier
-             Cache to JSON program:
-             http://github.com/Phalynx/WoT-Dossier-Cache-to-JSON
+jsondata.py  Module for handling data stored in plain World of
+             Tanks related JSON files.
 
 ===================================================================
 
