@@ -5,11 +5,29 @@
 
 ===================================================================
 
+Main module:
+
+wotdc.py     Module for parsing World of Tanks dossier_cache files.
+
+
+Core modules:
+
 depickler.py Module for depickling World of Tanks dossier_cache
              files.
 
 jsondata.py  Module for handling data stored in plain World of
              Tanks related JSON files.
+
+tankstats.py Module for common World of Tanks related efficiency
+             stats functions.
+
+
+Support modules:
+
+nested.py    Module for manage nested dictionaries.
+
+sdf.py       Module for parsiing binary data by an SDF (struct
+             definition) file.
 
 ===================================================================
 

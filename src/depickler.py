@@ -26,13 +26,17 @@ Usage: WoTDossierCache(dossier_cache_file)
 import base64
 import os
 import pickle
+import struct
 
 ENCODING = 'latin_1'
 # valid encodings: cp1256, latin_1, iso8859_9
 
-DOSSIER_KEY_0 = 2
-# no other key used
+DEFAULT_DOSSIERTYPE = 2
+DEFAULT_TYPEID = 1
 
+def dossiertype(dossier_key):
+    """Returns the dossier type from dossier_key."""
+    return dossier_key[0]
 
 def countryid(dossier_key):
     """Returns the countryid from dossier_key."""
@@ -42,13 +46,19 @@ def tankid(dossier_key):
     """Returns the tankid from dossier_key."""
     return dossier_key[1] >> 8 & 65535
 
-def key(countryid, tankid):
-    """Returns key used in dossier cache."""
-    return (tankid << 8)+(countryid << 4)+1
+def typeid(dossier_key):
+    """Returns the typeid from dossier_key."""
+    return dossier_key[1] & 15
 
-def dossier_key(countryid, tankid):
+def key(countryid, tankid, typeid=DEFAULT_TYPEID):
+    """Returns key used in dossier cache."""
+    return (tankid << 8) + (countryid << 4) + typeid
+    # TODO: typeid
+
+def dossier_key(countryid, tankid, dossiertype=DEFAULT_DOSSIERTYPE,
+                                   typeid=DEFAULT_TYPEID):
     """Returns dossier cache key."""
-    return DOSSIER_KEY_0, key(countryid, tankid)
+    return dossiertype, key(countryid, tankid, typeid=typeid)
 
 
 def _base32namepart(name, i):
@@ -92,6 +102,12 @@ class WoTDossierCache(dict):
             cache = pickle.load(dc_file, encoding=ENCODING)
 
         self.version = cache[0]
+
+        # we have to encode tank_data to get bytes object there
+        for key in cache[1]:
+            cache[1][key] = (cache[1][key][0],
+                             cache[1][key][1].encode(ENCODING))
+
         super().__init__(cache[1])
 
     def wotserver(self):
@@ -109,4 +125,7 @@ class WoTDossierCache(dict):
 
 
 if __name__ == '__main__':
-    pass
+    try:
+        test_dossier = WoTDossierCache('data/dossiers/dossier_0840.dat')
+    except:
+        pass

@@ -1,8 +1,8 @@
 """
 Module for handling data stored in plain World of Tanks related JSON files.
-Usage: Tanks()
-       Maps()
+Usage: Maps()
        Structures()
+       Tanks()
 
 You can even filter the data e.g.:
     Tanks().filt({'country': 'UK', 'tanktype': 'TD', 'tier': 3})
@@ -36,12 +36,14 @@ import depickler
 
 JSON_RE_SAMPLE = '"(?P<key>\w+?)":(?P<value>.+?)[,}]'
 
+JSON_LOCATION = 'data/json'
 MAPS_GLOB = 'maps.json'
 STRUCTURES_GLOB = 'structures_*.json'
 TANKS_GLOB = 'tanks.json'
 
+LIST_LOCATION = 'data/lists'
 COUNTRY = 'country.lst'
-TYPE = 'type.lst'
+TYPE = 'tanktype.lst'
 
 
 def elem_of_lst(i, list_file):
@@ -87,14 +89,16 @@ class Tank(dict):
 
     def country(self):
         """Returns name of the country."""
-        return elem_of_lst(self['countryid'], COUNTRY)
+        return elem_of_lst(self['countryid'],
+                            '{}/{}'.format(LIST_LOCATION, COUNTRY))
 
     def tanktype(self, longname=False):
         """
         Returns abbreviated type of tank.
         If keyword arg longname=True then it returns the full type string.
         """
-        elem = elem_of_lst(self['type'], TYPE)
+        elem = elem_of_lst(self['type'],
+                            '{}/{}'.format(LIST_LOCATION, TYPE))
         if longname:
             return elem
         return get_uppercased(elem)
@@ -128,7 +132,7 @@ class DictList(list):
     def append_from_json(self, json_file):
 
         def clean(raw_data):
-            '''Cleans a raw JSON data.'''
+            """Cleans a raw JSON data."""
             raw_data = raw_data.strip()
             raw_data = raw_data.strip('"')
 
@@ -146,14 +150,16 @@ class DictList(list):
             json_raw = json_f.readlines()
 
         line_data = []
-        for li in json_raw[1:-2]:
+        for li in json_raw:
             li_keys = []
             li_vals = []
             li_finditer = re.finditer(JSON_RE_SAMPLE, li)
             for i in li_finditer:
                 li_keys.append(i.group('key'))
                 li_vals.append(clean(i.group('value')))
-            self.append(self.dictclass(zip(li_keys, li_vals)))
+            line_dict = self.dictclass(zip(li_keys, li_vals))
+            if line_dict:
+                self.append(line_dict)
 
     def filt(self, filt_dict):
         """
@@ -201,19 +207,35 @@ class DictListFromJson(DictList):
 
 class Maps(DictListFromJson):
     """List of Maps."""
-    def __init__(self, json_glob=MAPS_GLOB, dictclass=Map):
+    def __init__(self, dictclass=Map, json_glob=
+                    '{}/{}'.format(JSON_LOCATION, MAPS_GLOB)):
         super().__init__(json_glob, dictclass)
 
 class Structures(DictListFromJson):
     """List of Structures."""
-    def __init__(self, json_glob=STRUCTURES_GLOB, dictclass=Structure):
+    def __init__(self, dictclass=Structure, json_glob=
+                    '{}/{}'.format(JSON_LOCATION, STRUCTURES_GLOB)):
         super().__init__(json_glob, dictclass)
 
 class Tanks(DictListFromJson):
     """List of Tanks."""
-    def __init__(self, json_glob=TANKS_GLOB, dictclass=Tank):
+    def __init__(self, dictclass=Tank, json_glob=
+                    '{}/{}'.format(JSON_LOCATION, TANKS_GLOB)):
         super().__init__(json_glob, dictclass)
 
 
 if __name__ == '__main__':
-    pass
+    try:
+        maps = Maps()
+    except:
+        pass
+
+    try:
+        structures = Structures()
+    except:
+        pass
+
+    try:
+        tanks = Tanks()
+    except:
+        pass
